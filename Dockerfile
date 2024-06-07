@@ -14,7 +14,7 @@ RUN npm install
 COPY . .
 
 # Execute a build da aplicação
-RUN npm run build
+RUN npm run dev
 
 # Etapa 2: Servir a aplicação usando Nginx
 FROM nginx:stable-alpine
