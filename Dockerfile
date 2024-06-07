@@ -1,32 +1,35 @@
-# Etapa 1: Construir a aplicação
-FROM node:18 as build
+# Estágio 1: Construção da aplicação
+FROM node:18-alpine AS build
 
-# Defina o diretório de trabalho no contêiner
+# Define o diretório de trabalho dentro do contêiner
 WORKDIR /app
 
-# Copie os arquivos package.json e package-lock.json
+# Copia os arquivos de configuração e de dependências
 COPY package*.json ./
 
-# Instale as dependências
+# Instala as dependências do projeto
 RUN npm install
 
-# Copie todos os arquivos do projeto para o diretório de trabalho
+# Copia todo o código-fonte para o diretório de trabalho do contêiner
 COPY . .
 
-# Execute a build da aplicação
-RUN npm run dev
+# Compila a aplicação
+RUN npm run build
 
-# Etapa 2: Servir a aplicação usando Nginx
+# Estágio 2: Configuração do servidor web
 FROM nginx:stable-alpine
 
-# Copie os arquivos estáticos da build para o diretório padrão do Nginx
+# Remove o arquivo padrão de configuração do nginx
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copia o arquivo de configuração do nginx para o contêiner
+COPY nginx.conf /etc/nginx/conf.d
+
+# Copia os arquivos compilados da aplicação para o diretório de servimento do nginx
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copie o arquivo de configuração do Nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Exponha a porta 80
+# Expõe a porta 80 para acesso à aplicação
 EXPOSE 80
 
-# Comando para iniciar o Nginx
+# Inicia o nginx
 CMD ["nginx", "-g", "daemon off;"]
